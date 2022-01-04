@@ -1,0 +1,457 @@
+<!--StAuth10244: I Hetal Patel, 000821900 certify that this material is my original work. No other person's work has been used without due acknowledgement. I have not made my work available to anyone else."-->
+<!-- Ref : https://developers.google.com/maps/documentation/javascript/streetview
+          For Extra Feature-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>   </title>
+    <style>
+
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }     
+        .header{
+            text-align: center;
+            height: 40px;   
+            color:rgb(238, 225, 225);    
+            background-image: url('https://mcdn.wallpapersafari.com/medium/63/22/uawCFA.jpg');
+            background-repeat: no-repeat;          
+            background-size: 100%;
+        }   
+        .header p{
+            /*border:1px solid red;*/
+            font-size: 25pt;
+            height: 100%;
+        }
+        .grid-container{
+            display: grid;
+            grid-template-columns: 28% 72%;  
+            grid-template-rows:auto auto;      
+        }
+        #aside{
+            border:1px solid darkred;
+            grid-column: 1/2;
+            grid-row: 1/2;  
+         
+        }
+        #main {
+            border:1px solid darkred;
+            grid-column: 2/3;
+            grid-row: 1/2;      
+        }
+        #map{
+            height:700px;
+            width: 100%;
+        }
+        table{
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            margin: 10px;
+        }
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+        .infoWindow_header{
+            margin-left: 10px;
+        }
+        .filterButtonContainer{
+            height: 100%;
+            position: relative;
+            /*border: 3px solid green;*/
+            width: 100%;
+        }
+        .filterButtons{
+            margin: 0;
+            position: absolute;
+            top: 15%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            /*border: 1px solid red;*/
+        }
+        
+        .btn{
+            height:30px;
+            margin: 2px;
+            width:60px;
+
+        }
+        .btn1{
+            height:30px;
+            
+        }
+        .geoLocationContainer{
+            margin-top: 20px;
+            display: inline-block;
+          
+        }
+        #whereIamButton{
+            height:40px;
+            width:100px;
+        }
+        #removeGeotn{
+            height:40px;
+            width:150px;          
+            
+        }
+        .addressContainer{
+            margin: 0;
+            position: absolute;
+            top:120%;  
+                     
+            /*border: 1px solid red;*/
+        }
+
+        #addressText{
+            height: 30px;
+
+        }
+        .destinationListCOntainer{
+            margin: 0;
+            position: absolute;
+            top:220%;            
+            /*border: 1px solid red;*/
+        }
+        #pano{
+
+            margin: 0;
+            position: absolute;
+            top:180%; 
+            /*border: 1px solid blue;*/
+            width: 420px;
+            height:410px;
+            background-image: url('https://images.unsplash.com/photo-1520262494112-9fe481d36ec3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=387&q=80');
+            background-repeat: no-repeat;
+            background-size: 100%;
+        }
+        #streetViewBtn{
+            font-size: 10pt;
+            color:fuchsia;
+        }
+        .refereshcontainer{
+            margin: 0;
+            position: relative;
+            top:95%;
+            left:35%;  
+            
+            /*border: 1px solid red;*/
+        }
+        #refreshMap{
+            margin: 0;
+            position: absolute;
+            top: 5%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            font-size: 15pt;
+        }
+        #routeButton{
+            font-size: 10pt;
+            color:rgb(74, 45, 233);
+            height:30px;
+            width:50px;
+        }
+        #errorShow{
+            margin: 0;
+            position: relative;
+            top:95%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <p>Waterfalls in Hamilton</p>
+    </div>
+    <div class="grid-container">
+        <div id="aside">
+            <div class="filterButtonContainer">
+                
+                <div class="filterButtons">
+                     <label>Filter waterfalls by Ownership:</label>
+                    <button id="allWFButton" class="btn">All</button>
+                    <button id="privateWFButton" class="btn">Private</button>
+                    <button id="publicWFButton" class="btn">Public</button> 
+                <div class="geoLocationContainer">
+                    <label>My current Location:</label>
+                    <button id="whereIamButton" class="btn">Geolocation</button> 
+                    <button id="removeGeotn" class="btn">Remove Geolocation</button> 
+                </div>
+                <div class="addressContainer">
+                    <label>Find Location:</label>
+                    <input type="text" id="addressText"size=33 style="font-size:15px;">
+                    <button id="goAddress" class="btn1">GO</button><br/>               
+
+                </div> 
+                <div id="pano"></div>
+                
+            </div>
+            <div class="refereshcontainer">
+                <button id="refreshMap">Refresh Map</button><br/>
+                
+            </div> 
+            <span id="errorShow"style="font-size:15px;color:red"></span>
+        </div>
+        </div>
+        <div id="main">
+            <div id="map"></div>
+        </div>
+    </div>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSZ7vfAWHHxYaHEOaFsfhhmApTP8wKRpM&callback=mapInitialize"></script>
+    <script src="cityWaterfalls.js"></script>
+    <script>
+        var map, marker,position;
+        var markers=[];
+        var currentPosition;
+        //The mapInitialize() function will execute after Google Maps JS library finishes loading.
+        function mapInitialize()
+        {
+            //map:creating Google Map Object
+            map=new google.maps.Map(document.getElementById("map"),
+                {
+                    center:{lat:43.2387,lng:-79.8881},
+                    zoom:12,
+                    focus:true
+                });
+                //geocoder : Locating address as per user input
+                geocoder=new google.maps.Geocoder();
+                //// Reading cityWaterfalls.js file,gettting location from it 
+                showMarkersOnMap();
+                document.getElementById("addressText").value = "";
+                //pano.setStreetView(null);
+                document.getElementById("pano").innerHTML=null;
+                // services used to provide directions
+                 directionsService = new google.maps.DirectionsService();
+                 directionsRenderer = new google.maps.DirectionsRenderer();
+
+                 // have the directions renderer work with this map
+                directionsRenderer.setMap(map);
+                        
+        }
+        
+        function showMarkersOnMap(){
+            for(i=0;i<cityWaterfalls.length;i++){
+                //filter hamilton waterfalls by community
+                if(cityWaterfalls[i].properties.COMMUNITY==="Hamilton"||cityWaterfalls[i].properties.COMMUNITY==="Stoney Creek"|cityWaterfalls[i].properties.COMMUNITY==="Ancaster")
+                { 
+                    //changing marker icon on the basis of Ownership
+                    if(cityWaterfalls[i].properties.OWNERSHIP==="public"){
+                        new_icon="http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_purple.png";
+                    }
+                    else if(cityWaterfalls[i].properties.OWNERSHIP==="private"){
+                        new_icon="http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_orange.png";
+                    }
+                    else{
+                        new_icon = "http://maps.google.com/mapfiles/kml/paddle/grn-blank.png";
+                    }
+                // Point 1 of assignment:Atleast 10 markers on map
+                marker=new google.maps.Marker({
+                    position:{lat:cityWaterfalls[i].geometry.coordinates[1],
+                    lng:cityWaterfalls[i].geometry.coordinates[0]},
+                    title:cityWaterfalls[i].properties.NAME,
+                    icon:new_icon             
+                });
+                markers.push(marker);
+                //set markers on map
+                marker.setMap(map);
+                //store the m   arker info
+                marker.NAME=cityWaterfalls[i].properties.NAME;
+                marker.TYPE=cityWaterfalls[i].properties.TYPE;
+                marker.LOCATION=cityWaterfalls[i].properties.COMMUNITY;
+                marker.ALT_NAME=cityWaterfalls[i].properties.ALTERNATE_NAME;
+                marker.ACCESS_FROM=cityWaterfalls[i].properties.ACCESS_FROM;
+                marker.OWNERSHIP=cityWaterfalls[i].properties.OWNERSHIP;
+                marker.POSITION={lat:cityWaterfalls[i].geometry.coordinates[1],lng:cityWaterfalls[i].geometry.coordinates[0]}
+                //create object for infowindow
+                infoWindow=new google.maps.InfoWindow({ maxWidth: 350 });
+                //open infoWindow by clicking on marker
+                marker.addListener('click',marker_clicked);                
+                }
+            }
+        }
+        
+        //method call when user click on My Location button
+        function showYourPositionOnMap(position){
+            currentPosition={ lat: position.coords.latitude, 
+                    lng: position.coords.longitude
+                  };
+            user_location=new google.maps.Marker({
+                position:currentPosition,
+                  title:"Your are here",
+                  icon:"http://maps.google.com/mapfiles/kml/pal2/icon5.png"
+
+            });
+            user_location.POSITION=position;
+            user_location.setMap(map);
+            user_location.addListener('click',origin_marker_clicked);
+        }
+        //for waterfall markers
+        function marker_clicked(){
+            //function for Info window    
+          //  directionsRenderer.setMap(null);
+            infoWindow.close();            
+            //directionsRenderer.setMap(null);
+            corpos=this.POSITION;
+            document.getElementById("pano").innerHTML=null;
+            infoWindow.setContent("<table><tr class='infoWindow_header'>"+this.NAME+" Infromation</tr>"+
+                                            "<tr><td>Name</td><td>"+this.NAME+"</td></tr>"+
+                                            "<tr><td>Community/Location</td><td>"+this.LOCATION+"</td></tr>"+
+                                            "<tr><td>Type</td><td>"+this.TYPE+"</td></tr>"+
+                                            "<tr><td>Ownership</td><td>"+this.OWNERSHIP+"</td></tr>"+
+                                            "<tr><td>Alternate Name</td><td>"+this.ALT_NAME+"</td></tr>"+
+                                            "<tr><td>Access From</td><td>"+this.ACCESS_FROM+"</td></tr>"+
+                                            "<tr><td>Route to your Current Location</td><td><button type='button' id='routeButton' onclick='showRouteToCurrentLocation()'>Route</button></td></tr>"+
+                                            "<tr><td>Street View</td><td><button type='button' id='streetViewBtn' onclick='showStreetView()'>Click here for street View </button></td></tr></table>");
+            
+            infoWindow.open({map,shouldFocus:false},this);  
+            
+
+
+        }
+        //for user location marker
+        function origin_marker_clicked(){
+            //function for Info window      
+            corpos=this.POSITION;          
+            infoWindow.close();
+            infoWindow.setContent("<table><tr></tr><tr class='infoWindow_header'>You are here</tr><tr><td>Street View</td><td><button type='button' id='streetViewBtn' onclick='showStreetView()'>Click here for street View </button></td></tr></table>");
+            infoWindow.open(map,this);                 
+
+        }  
+        function getUserRequestAddress() {
+            var address = document.getElementById('addressText').value;
+            
+            // perform geocoding for the address entered into the input textbox, a 
+            // callback function is given the latitude and longitude as an an 
+            // argument as part of a results object..
+            geocoder.geocode( { 'address': address}, function(results, status) {
+                
+                if (status == 'OK') {
+                    position=results[0].geometry.location;
+                    marker = new google.maps.Marker({
+                    map: map,
+                    position: position,
+                    title:address,                    
+                    icon:"http://maps.google.com/mapfiles/kml/pal2/icon5.png"
+                });
+                } else {
+                alert('Geocode was not successful for the following reason: ' + status);
+                }
+                marker.POSITION=position;
+                marker.addListener('click',origin_marker_clicked);
+            });
+        }
+        //call showYourPositionOnMap method to find user's current location
+        document.getElementById("whereIamButton").onclick=function(){
+            navigator.geolocation.getCurrentPosition(showYourPositionOnMap,showError);
+        }
+        // call the codeAddress function when the geolocate button is clicked
+        document.getElementById("goAddress").onclick = getUserRequestAddress;
+        //Refereshing Map
+        document.getElementById("refreshMap").onclick=mapInitialize;
+        document.getElementById("privateWFButton").onclick=showPrivateWaterFalls;
+        document.getElementById("publicWFButton").onclick=showPublicWaterFalls;
+        document.getElementById("allWFButton").onclick=showAllWaterFalls;
+        document.getElementById("removeGeotn").onclick=removeGeoLocation;
+        //filter private waterfall by clicking on private button
+        function showPrivateWaterFalls(){
+            for(i=0;i<markers.length;i++){
+                if(markers[i].OWNERSHIP=="private"){
+                    markers[i].setMap(map);
+                }
+                else{
+                    markers[i].setMap(null);
+                }
+            }
+        }
+        //filter public waterfall by clicking on public button
+        function showPublicWaterFalls(){
+            for(i=0;i<markers.length;i++){
+                if(markers[i].OWNERSHIP=="public"){
+                    markers[i].setMap(map);
+                }
+                else{
+                    markers[i].setMap(null);
+                }
+            }
+            infoWindow.close();
+        }
+        //filter all waterfall by clicking on all button
+        function showAllWaterFalls(){
+            for(i=0;i<markers.length;i++){                
+                    markers[i].setMap(map);              
+                }
+           infoWindow.close();
+        }
+        
+        function removeGeoLocation(){
+                        user_location.setMap(null);
+
+        }
+        function showRouteToCurrentLocation(){
+            request = {
+                origin: currentPosition,
+                destination: corpos,
+                travelMode: 'DRIVING'
+            };
+
+            // use the directions service and directions renderer to render the 
+            // directions on the map
+            directionsService.route(request, function(result, status) {
+                if (status == 'OK') {
+                directionsRenderer.setDirections(result);
+                console.log(result);
+                }
+            });
+        }
+        
+        //execute after clicking marker
+        //able to see Street view
+        function showStreetView()
+        {      
+           
+            const pos = corpos;
+            const pano = new google.maps.Map(document.getElementById("pano"), {
+                center: pos,
+                zoom: 2,
+            });
+            const panorama = new google.maps.StreetViewPanorama(
+                document.getElementById("pano"),
+                {
+                position: pos,
+                pov: {
+                    heading: 2,
+                    pitch: 2,
+                },
+                }
+            );
+            pano.setStreetView(panorama);
+         }
+
+    // error function
+    function showError(error) {
+    
+    // the error function is given an error object containing a code property 
+    // that we can look at to determine which error occurred...
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+      errorShow.innerHTML = "User denied the request for Geolocation."
+        break;
+      case error.POSITION_UNAVAILABLE:
+      errorShow.innerHTML = "Location information is unavailable."
+        break;
+      case error.TIMEOUT:
+      errorShow.innerHTML = "The request to get user location timed out."
+        break;
+      case error.UNKNOWN_ERROR:
+      errorShow.innerHTML = "An unknown error occurred."
+        break;
+    }
+  }   
+    </script>
+</body>
+
+</html>

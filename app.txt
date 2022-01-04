@@ -1,0 +1,15 @@
+***************************************************************************************
+*StAuth10244: I Hetal Patel, 000821900 certify that this material is my original work.*
+*No other person's work has been used without due acknowledgement. 		      *	
+*I have not made my work available to anyone else.				      *
+***************************************************************************************	
+
+Assignment: Assignment-1
+
+Project Name: Waterfalls in Hamilton
+
+Users: General purpose:For tourist as well as local people who wants to visit waterfalls in Hamilton.
+
+Extra Feature: User can see the street view of that particuler location by clicking on "Click here for Street View" button from InfoWindow.
+
+Ref. Extra Feature: https://developers.google.com/maps/documentation/javascript/streetview.
